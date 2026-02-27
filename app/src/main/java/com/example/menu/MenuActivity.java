@@ -2,15 +2,16 @@ package com.example.menu;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.menu.models.Menu;
-import com.example.menu.repositories.MenuRepository;
 import com.example.menu.data.MenuDbHelper;
 import com.example.menu.data.SeedData;
+import com.example.menu.models.Menu;
+import com.example.menu.repositories.MenuRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,7 @@ public class MenuActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
 
-        // create db + seed (only if empty)
+        // Create DB + seed (only if empty)
         MenuDbHelper helper = new MenuDbHelper(this);
         SeedData.seedIfEmpty(helper);
 
@@ -39,14 +40,16 @@ public class MenuActivity extends AppCompatActivity {
         }
 
         ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, names);
+                new ArrayAdapter<>(this, R.layout.row_card_one_line, android.R.id.text1, names);
 
         listView.setAdapter(adapter);
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
-            long menuId = menus.get(position).getId();
+            Menu selected = menus.get(position);
+            Log.d("NAV", "Clicked menu: id=" + selected.getId() + " name=" + selected.getName());
+
             Intent intent = new Intent(MenuActivity.this, SectionActivity.class);
-            intent.putExtra("menuId", menuId);
+            intent.putExtra("menuId", selected.getId());
             startActivity(intent);
         });
     }

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,41 +15,44 @@
             android:id="@+id/tvTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="Item Title"
             android:textSize="20sp"
-            android:textStyle="bold"
-            android:text="Item Title" />
+            android:textStyle="bold" />
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/vpImages"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:layout_marginTop="12dp" />
 
         <TextView
             android:id="@+id/tvVariants"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="12dp"
-            android:textStyle="bold"
+            android:layout_marginTop="12dp"
             android:text="Variants:" />
 
         <TextView
             android:id="@+id/tvModifiers"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="12dp"
-            android:textStyle="bold"
+            android:layout_marginTop="12dp"
             android:text="Modifier Groups:" />
 
         <TextView
             android:id="@+id/tvAllergens"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="12dp"
-            android:textStyle="bold"
+            android:layout_marginTop="12dp"
             android:text="Allergens:" />
 
         <TextView
             android:id="@+id/tvTotalPrice"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="16dp"
-            android:textStyle="bold"
+            android:layout_marginTop="16dp"
             android:text="Total Price:" />
 
     </LinearLayout>
-</ScrollView>
+
+</androidx.core.widget.NestedScrollView>

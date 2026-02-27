@@ -19,7 +19,6 @@ public class MenuDbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
 
-        // MENUS
         db.execSQL(
                 "CREATE TABLE " + DbSchema.Menus.TABLE + " (" +
                         DbSchema.Menus.COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -28,7 +27,6 @@ public class MenuDbHelper extends SQLiteOpenHelper {
                         ");"
         );
 
-        // SECTIONS
         db.execSQL(
                 "CREATE TABLE " + DbSchema.Sections.TABLE + " (" +
                         DbSchema.Sections.COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -40,7 +38,6 @@ public class MenuDbHelper extends SQLiteOpenHelper {
                         ");"
         );
 
-        // ITEMS
         db.execSQL(
                 "CREATE TABLE " + DbSchema.Items.TABLE + " (" +
                         DbSchema.Items.COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -49,12 +46,24 @@ public class MenuDbHelper extends SQLiteOpenHelper {
                         DbSchema.Items.COL_DESCRIPTION + " TEXT, " +
                         DbSchema.Items.COL_PRICE + " REAL NOT NULL, " +
                         DbSchema.Items.COL_IS_ACTIVE + " INTEGER DEFAULT 1, " +
+                        DbSchema.Items.COL_IMAGE_RES + " TEXT, " +
                         "FOREIGN KEY(" + DbSchema.Items.COL_SECTION_ID + ") REFERENCES " +
                         DbSchema.Sections.TABLE + "(" + DbSchema.Sections.COL_ID + ") ON DELETE CASCADE" +
                         ");"
         );
 
-        // VARIANTS
+        // NEW: ITEM IMAGES table
+        db.execSQL(
+                "CREATE TABLE " + DbSchema.ItemImages.TABLE + " (" +
+                        DbSchema.ItemImages.COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        DbSchema.ItemImages.COL_ITEM_ID + " INTEGER NOT NULL, " +
+                        DbSchema.ItemImages.COL_IMAGE_RES + " TEXT NOT NULL, " +
+                        DbSchema.ItemImages.COL_SORT_ORDER + " INTEGER NOT NULL DEFAULT 0, " +
+                        "FOREIGN KEY(" + DbSchema.ItemImages.COL_ITEM_ID + ") REFERENCES " +
+                        DbSchema.Items.TABLE + "(" + DbSchema.Items.COL_ID + ") ON DELETE CASCADE" +
+                        ");"
+        );
+
         db.execSQL(
                 "CREATE TABLE " + DbSchema.Variants.TABLE + " (" +
                         DbSchema.Variants.COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -66,35 +75,31 @@ public class MenuDbHelper extends SQLiteOpenHelper {
                         ");"
         );
 
-        // MODIFIER GROUPS
         db.execSQL(
                 "CREATE TABLE " + DbSchema.ModifierGroups.TABLE + " (" +
                         DbSchema.ModifierGroups.COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         DbSchema.ModifierGroups.COL_NAME + " TEXT NOT NULL, " +
                         DbSchema.ModifierGroups.COL_MIN_SELECT + " INTEGER DEFAULT 0, " +
-                        DbSchema.ModifierGroups.COL_MAX_SELECT + " INTEGER DEFAULT 1" +
+                        DbSchema.ModifierGroups.COL_MAX_SELECT + " INTEGER DEFAULT 0" +
                         ");"
         );
 
-        // MODIFIER OPTIONS
         db.execSQL(
                 "CREATE TABLE " + DbSchema.ModifierOptions.TABLE + " (" +
                         DbSchema.ModifierOptions.COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         DbSchema.ModifierOptions.COL_GROUP_ID + " INTEGER NOT NULL, " +
                         DbSchema.ModifierOptions.COL_NAME + " TEXT NOT NULL, " +
-                        DbSchema.ModifierOptions.COL_PRICE_DELTA + " REAL DEFAULT 0, " +
+                        DbSchema.ModifierOptions.COL_PRICE_DELTA + " REAL NOT NULL, " +
                         "FOREIGN KEY(" + DbSchema.ModifierOptions.COL_GROUP_ID + ") REFERENCES " +
                         DbSchema.ModifierGroups.TABLE + "(" + DbSchema.ModifierGroups.COL_ID + ") ON DELETE CASCADE" +
                         ");"
         );
 
-        // ITEM_MODIFIER_GROUPS (N:N)
         db.execSQL(
                 "CREATE TABLE " + DbSchema.ItemModifierGroups.TABLE + " (" +
                         DbSchema.ItemModifierGroups.COL_ITEM_ID + " INTEGER NOT NULL, " +
                         DbSchema.ItemModifierGroups.COL_GROUP_ID + " INTEGER NOT NULL, " +
-                        "PRIMARY KEY(" + DbSchema.ItemModifierGroups.COL_ITEM_ID + "," +
-                        DbSchema.ItemModifierGroups.COL_GROUP_ID + "), " +
+                        "PRIMARY KEY(" + DbSchema.ItemModifierGroups.COL_ITEM_ID + ", " + DbSchema.ItemModifierGroups.COL_GROUP_ID + "), " +
                         "FOREIGN KEY(" + DbSchema.ItemModifierGroups.COL_ITEM_ID + ") REFERENCES " +
                         DbSchema.Items.TABLE + "(" + DbSchema.Items.COL_ID + ") ON DELETE CASCADE, " +
                         "FOREIGN KEY(" + DbSchema.ItemModifierGroups.COL_GROUP_ID + ") REFERENCES " +
@@ -102,21 +107,18 @@ public class MenuDbHelper extends SQLiteOpenHelper {
                         ");"
         );
 
-        // ALLERGENS
         db.execSQL(
                 "CREATE TABLE " + DbSchema.Allergens.TABLE + " (" +
                         DbSchema.Allergens.COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        DbSchema.Allergens.COL_NAME + " TEXT NOT NULL UNIQUE" +
+                        DbSchema.Allergens.COL_NAME + " TEXT NOT NULL" +
                         ");"
         );
 
-        // ITEM_ALLERGENS (N:N)
         db.execSQL(
                 "CREATE TABLE " + DbSchema.ItemAllergens.TABLE + " (" +
                         DbSchema.ItemAllergens.COL_ITEM_ID + " INTEGER NOT NULL, " +
                         DbSchema.ItemAllergens.COL_ALLERGEN_ID + " INTEGER NOT NULL, " +
-                        "PRIMARY KEY(" + DbSchema.ItemAllergens.COL_ITEM_ID + "," +
-                        DbSchema.ItemAllergens.COL_ALLERGEN_ID + "), " +
+                        "PRIMARY KEY(" + DbSchema.ItemAllergens.COL_ITEM_ID + ", " + DbSchema.ItemAllergens.COL_ALLERGEN_ID + "), " +
                         "FOREIGN KEY(" + DbSchema.ItemAllergens.COL_ITEM_ID + ") REFERENCES " +
                         DbSchema.Items.TABLE + "(" + DbSchema.Items.COL_ID + ") ON DELETE CASCADE, " +
                         "FOREIGN KEY(" + DbSchema.ItemAllergens.COL_ALLERGEN_ID + ") REFERENCES " +
@@ -133,6 +135,7 @@ public class MenuDbHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + DbSchema.ModifierOptions.TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + DbSchema.ModifierGroups.TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + DbSchema.Variants.TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + DbSchema.ItemImages.TABLE); // NEW
         db.execSQL("DROP TABLE IF EXISTS " + DbSchema.Items.TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + DbSchema.Sections.TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + DbSchema.Menus.TABLE);
