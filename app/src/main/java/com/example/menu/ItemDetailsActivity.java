@@ -5,14 +5,18 @@ import android.util.Log;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.menu.models.Allergen;
 import com.example.menu.models.Item;
+import com.example.menu.models.ItemImage;
 import com.example.menu.models.ItemVariant;
 import com.example.menu.models.ModifierGroup;
 import com.example.menu.models.ModifierOption;
 import com.example.menu.repositories.MenuRepository;
+import com.example.menu.ui.ImagePagerAdapter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ItemDetailsActivity extends AppCompatActivity {
@@ -23,6 +27,7 @@ public class ItemDetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_item_details);
 
         TextView tvTitle = findViewById(R.id.tvTitle);
+        ViewPager2 vpImages = findViewById(R.id.vpImages);
         TextView tvVariants = findViewById(R.id.tvVariants);
         TextView tvModifiers = findViewById(R.id.tvModifiers);
         TextView tvAllergens = findViewById(R.id.tvAllergens);
@@ -44,12 +49,47 @@ public class ItemDetailsActivity extends AppCompatActivity {
             List<ModifierGroup> groups = repo.getModifierGroups(itemId);
             List<Allergen> allergens = repo.getAllergens(itemId);
 
-            // -------- Title --------
             if (item != null) {
                 tvTitle.setText(item.getName());
+                Log.d("DETAILS_DEBUG", "Item name=" + item.getName() + " fallbackImage=" + item.getImageResName());
             } else {
                 tvTitle.setText("Item not found");
+                Log.d("DETAILS_DEBUG", "Item is null");
             }
+
+            // -------- Images (slider) --------
+            List<String> imageResNames = new ArrayList<>();
+
+            List<ItemImage> images = repo.getItemImages(itemId);
+            Log.d("DETAILS_DEBUG", "repo.getItemImages count=" + (images == null ? "null" : images.size()));
+
+            if (images != null && !images.isEmpty()) {
+                for (ItemImage img : images) {
+                    Log.d("DETAILS_DEBUG", "DB image: " + img.getImageResName() + " order=" + img.getSortOrder());
+                    if (img.getImageResName() != null && !img.getImageResName().trim().isEmpty()) {
+                        imageResNames.add(img.getImageResName().trim());
+                    }
+                }
+            }
+
+            if (imageResNames.isEmpty() && item != null) {
+                String fallback = item.getImageResName();
+                if (fallback != null && !fallback.trim().isEmpty()) {
+                    Log.d("DETAILS_DEBUG", "Using fallback item.image_res=" + fallback);
+                    imageResNames.add(fallback.trim());
+                } else {
+                    Log.d("DETAILS_DEBUG", "No fallback image_res in items table");
+                }
+            }
+
+            // Validate drawables exist
+            for (String rn : imageResNames) {
+                int resId = getResources().getIdentifier(rn, "drawable", getPackageName());
+                Log.d("DETAILS_DEBUG", "Drawable lookup: " + rn + " => resId=" + resId);
+            }
+
+            vpImages.setAdapter(new ImagePagerAdapter(this, imageResNames));
+            vpImages.setOffscreenPageLimit(1);
 
             // -------- Variants --------
             StringBuilder vb = new StringBuilder();
@@ -61,7 +101,6 @@ public class ItemDetailsActivity extends AppCompatActivity {
                     vb.append("- ").append(v.getLabel())
                             .append(" : ").append(v.getPrice()).append("\n");
                 }
-                // ניקח מחיר בסיס = הווריאנט הראשון (אפשר לשפר אח"כ לבחירה)
                 basePrice = variants.get(0).getPrice();
             } else {
                 vb.append("No variants\n");
@@ -106,7 +145,6 @@ public class ItemDetailsActivity extends AppCompatActivity {
             }
             tvAllergens.setText(ab.toString());
 
-            // -------- Total Price (כרגע רק מחיר בסיס) --------
             tvTotalPrice.setText("Total Price: " + basePrice);
 
         } catch (Exception e) {

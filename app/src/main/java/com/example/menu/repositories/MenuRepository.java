@@ -18,7 +18,7 @@ import com.example.menu.models.ModifierGroupWithOptions;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import com.example.menu.models.ItemImage;
 public class MenuRepository {
 
     private final MenuDbHelper dbHelper;
@@ -343,6 +343,33 @@ public class MenuRepository {
         for (ModifierGroup g : groups) {
             List<ModifierOption> options = getModifierOptions(g.getId()); // already exists
             result.add(new ModifierGroupWithOptions(g, options));
+        }
+
+        return result;
+    }
+    public List<ItemImage> getItemImages(long itemId) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        List<ItemImage> result = new ArrayList<>();
+
+        Cursor cursor = db.query(
+                DbSchema.ItemImages.TABLE,
+                null,
+                DbSchema.ItemImages.COL_ITEM_ID + "=?",
+                new String[]{String.valueOf(itemId)},
+                null, null,
+                DbSchema.ItemImages.COL_SORT_ORDER + " ASC"
+        );
+
+        try {
+            while (cursor.moveToNext()) {
+                long id = cursor.getLong(cursor.getColumnIndexOrThrow(DbSchema.ItemImages.COL_ID));
+                String res = cursor.getString(cursor.getColumnIndexOrThrow(DbSchema.ItemImages.COL_IMAGE_RES));
+                int order = cursor.getInt(cursor.getColumnIndexOrThrow(DbSchema.ItemImages.COL_SORT_ORDER));
+                result.add(new ItemImage(id, itemId, res, order));
+            }
+        } finally {
+            cursor.close();
+            db.close();
         }
 
         return result;
